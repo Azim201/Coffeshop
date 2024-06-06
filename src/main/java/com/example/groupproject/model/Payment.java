@@ -27,6 +27,7 @@ public class Payment {
     private Date payment_date;
     private String payment_method;
 
+
     //constructor
     public Payment(int payment_id, int order_id, double total, String status, String payment_method) {
         this.payment_id = payment_id;
@@ -76,5 +77,9 @@ public class Payment {
     }
 
     public void add(Payment payment) {
+    }
+
+    public String getPayment_method() {
+        return payment_method;
     }
 }

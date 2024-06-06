@@ -11,7 +11,6 @@ import lombok.Setter;
 //@Builder
 @Entity
 @Table(name = "product")
-
 public class Product {
     //declare variables
     @Id

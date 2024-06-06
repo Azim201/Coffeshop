@@ -1,9 +1,14 @@
 package com.example.groupproject.controller;
 
+
 import com.example.groupproject.dbconfig.DatabaseConfig;
+import com.example.groupproject.dto.CartDto;
+import com.example.groupproject.dto.OrderDto;
+import com.example.groupproject.dto.ProductDto;
 import com.example.groupproject.model.Cart;
 import com.example.groupproject.model.Order;
 import com.example.groupproject.model.Product;
+
 import lombok.Builder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -25,126 +30,162 @@ public class OrderController {
 
     @GetMapping("/order")
     public String getCartPage(Model model) {
-        model.addAttribute("orders", getOrdersFromDatabase());
+        List<OrderDto> orders = new ArrayList<>();
+        List<CartDto> carts = new ArrayList<>();
+        List<ProductDto> products = new ArrayList<>();
+
+        try {
+            // Get the database connection
+            Connection connection = DriverManager.getConnection(DatabaseConfig.JDBC_URL, DatabaseConfig.USERNAME, DatabaseConfig.PASSWORD);
+
+            // Retrieve orders from the database
+            String orderQuery = "SELECT * FROM orders";
+            Statement orderStatement = connection.createStatement();
+            ResultSet orderResultSet = orderStatement.executeQuery(orderQuery);
+
+            while (orderResultSet.next()) {
+                int userId = orderResultSet.getInt("user_id");
+                int orderId = orderResultSet.getInt("order_id");
+                int cartId = orderResultSet.getInt("cart_id");
+                double orderTotal = orderResultSet.getDouble("order_total");
+                int orderQuantity = orderResultSet.getInt("order_quantity");
+                String orderStatus = orderResultSet.getString("order_status");
+
+                // Retrieve cart details from the database
+                String cartQuery = "SELECT * FROM cart WHERE cart_id = ?";
+                PreparedStatement cartStatement = connection.prepareStatement(cartQuery);
+                cartStatement.setInt(1, cartId);
+                ResultSet cartResultSet = cartStatement.executeQuery();
+
+                if (cartResultSet.next()) {
+                    int userIdCart = cartResultSet.getInt("user_id");
+                    int productId = cartResultSet.getInt("product_id");
+                    int quantity = cartResultSet.getInt("cart_quantity");
+                    double total = cartResultSet.getDouble("cart_total");
+
+                    // Retrieve product details from the database
+                    String productQuery = "SELECT * FROM product WHERE product_id = ?";
+                    PreparedStatement productStatement = connection.prepareStatement(productQuery);
+                    productStatement.setInt(1, productId);
+                    ResultSet productResultSet = productStatement.executeQuery();
+
+                    if (productResultSet.next()) {
+                        String productName = productResultSet.getString("product_name");
+                        String productDescription = productResultSet.getString("product_description");
+                        double productPrice = productResultSet.getDouble("product_price");
+                        String productCategory = productResultSet.getString("product_category");
+                        int productQuantity = productResultSet.getInt("product_quantity");
+                        String productImage = productResultSet.getString("product_image");
+
+                        ProductDto productDto = new ProductDto(productName, productId, productDescription, productPrice, productQuantity, productCategory, productImage);
+                        CartDto cartDto = new CartDto(userIdCart, cartId, productId, quantity, total, productDto);
+                        OrderDto orderDto = new OrderDto(userId, orderId, cartId, orderTotal, orderQuantity, orderStatus, List.of(productDto));
+
+                        orders.add(orderDto);
+                        carts.add(cartDto);
+                        products.add(productDto);
+                    }
+
+                    productStatement.close();
+                }
+
+                cartStatement.close();
+            }
+
+            orderStatement.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        model.addAttribute("carts", carts);
+        model.addAttribute("orders", orders);
+        model.addAttribute("products", products);
         return "order";
     }
+
+
     @GetMapping("/adminOrder")
     public String getAdminCartPage(Model model) {
-        return "admin/adminOrder";
+        List<OrderDto> orders = new ArrayList<>();
+        List<CartDto> carts = new ArrayList<>();
+        List<ProductDto> products = new ArrayList<>();
+
+        try {
+            // Get the database connection
+            Connection connection = DriverManager.getConnection(DatabaseConfig.JDBC_URL, DatabaseConfig.USERNAME, DatabaseConfig.PASSWORD);
+
+            // Retrieve orders from the database
+            String orderQuery = "SELECT * FROM orders";
+            Statement orderStatement = connection.createStatement();
+            ResultSet orderResultSet = orderStatement.executeQuery(orderQuery);
+
+            while (orderResultSet.next()) {
+                int userId = orderResultSet.getInt("user_id");
+                int orderId = orderResultSet.getInt("order_id");
+                int cartId = orderResultSet.getInt("cart_id");
+                double orderTotal = orderResultSet.getDouble("order_total");
+                int orderQuantity = orderResultSet.getInt("order_quantity");
+                String orderStatus = orderResultSet.getString("order_status");
+
+                // Retrieve cart details from the database
+                String cartQuery = "SELECT * FROM cart WHERE cart_id = ?";
+                PreparedStatement cartStatement = connection.prepareStatement(cartQuery);
+                cartStatement.setInt(1, cartId);
+                ResultSet cartResultSet = cartStatement.executeQuery();
+
+                if (cartResultSet.next()) {
+                    int userIdCart = cartResultSet.getInt("user_id");
+                    int productId = cartResultSet.getInt("product_id");
+                    int quantity = cartResultSet.getInt("cart_quantity");
+                    double total = cartResultSet.getDouble("cart_total");
+
+                    // Retrieve product details from the database
+                    String productQuery = "SELECT * FROM product WHERE product_id = ?";
+                    PreparedStatement productStatement = connection.prepareStatement(productQuery);
+                    productStatement.setInt(1, productId);
+                    ResultSet productResultSet = productStatement.executeQuery();
+
+                    if (productResultSet.next()) {
+                        String productName = productResultSet.getString("product_name");
+                        String productDescription = productResultSet.getString("product_description");
+                        double productPrice = productResultSet.getDouble("product_price");
+                        String productCategory = productResultSet.getString("product_category");
+                        int productQuantity = productResultSet.getInt("product_quantity");
+                        String productImage = productResultSet.getString("product_image");
+
+                        ProductDto productDto = new ProductDto(productName, productId, productDescription, productPrice, productQuantity, productCategory, productImage);
+                        CartDto cartDto = new CartDto(userIdCart, cartId, productId, quantity, total, productDto);
+                        OrderDto orderDto = new OrderDto(userId, orderId, cartId, orderTotal, orderQuantity, orderStatus, List.of(productDto));
+
+                        orders.add(orderDto);
+                        carts.add(cartDto);
+                        products.add(productDto);
+                    }
+
+                    productStatement.close();
+                }
+
+                cartStatement.close();
+            }
+
+            orderStatement.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        model.addAttribute("carts", carts);
+        model.addAttribute("orders", orders);
+        model.addAttribute("products", products);
+        return "/admin/adminOrder";
     }
+
     @PostMapping("/add_status")
     public String updateOrderDatabase(@RequestParam("order_id") int order_id)
     {
         updateOrder(order_id);
         return "redirect:/adminOrder";
-    }
-
-    @PostMapping("/add_order")
-    public String addOrder(@RequestParam("cart_id") int cart_id, @RequestParam("order_total") double order_total, @RequestParam("order_quantity") int order_quantity) {
-        Order order = new Order(cart_id, order_quantity, order_total);
-        addOrderToDatabase(order);
-        return "redirect:/checkout";
-    }
-
-    public List<Order> getOrdersFromDatabase() {
-        String jdbcUrl = DatabaseConfig.JDBC_URL;
-        String username = DatabaseConfig.USERNAME;
-        String password = DatabaseConfig.PASSWORD;
-
-        //Database table and column names
-        String tableName = "orders";
-        String orderId = "order_id";
-        String userId = "user_id";
-        String cartId = "cart_id";
-        String orderTotal = "order_total";
-        String orderStatus = "order_status";
-        String orderQuantity = "order_quantity";
-
-        List<Order> orders = new ArrayList<>();
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            //Connect to MariaDB
-            connection = DriverManager.getConnection(jdbcUrl, username, password);
-            //Create a statement object
-            statement = connection.createStatement();
-            //Execute the SELECT query
-            resultSet = statement.executeQuery("SELECT * FROM " + tableName);
-
-            //Process the results
-            while (resultSet.next()) {
-                int order_id = resultSet.getInt(orderId);
-                int user_id = resultSet.getInt(userId);
-                int cart_id = resultSet.getInt(cartId);
-                int order_quantity = resultSet.getInt(orderQuantity);
-                double order_total = resultSet.getDouble(orderTotal);
-                String order_status = resultSet.getString(orderStatus);
-
-                Order order = new Order(user_id, order_id, cart_id, order_quantity, order_total, order_status);
-                orders.add(order);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return orders;
-    }
-
-    public void addOrderToDatabase(Order order) {
-        String jdbcUrl = DatabaseConfig.JDBC_URL;
-        String username = DatabaseConfig.USERNAME;
-        String password = DatabaseConfig.PASSWORD;
-
-        //Database table and column names
-        String tableName = "orders";
-        String userId = "user_id";
-        String cartId = "cart_id";
-        String orderTotal = "order_total";
-        String orderStatus = "order_status";
-        String orderQuantity = "order_quantity";
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-        int user_id = 1;
-        double order_total = order.getOrder_total();
-        String order_status = "pending";
-        int cart_id = order.getCart_id();
-        int quantity = 1;
-
-        try {
-            //Connect to MariaDB
-            connection = DriverManager.getConnection(jdbcUrl, username, password);
-            //Create a statement object
-
-            String sql = "INSERT INTO " + tableName + " (" + userId + ", " + cartId + ", " + orderQuantity + ", " +orderTotal + ", " + orderStatus + ") VALUES (?, ?, ?, ?, ?)";
-
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, user_id);
-            statement.setInt(2, cart_id);
-            statement.setInt(3, quantity);
-            statement.setDouble(4, order_total);
-            statement.setString(5, order_status);
-
-            //Execute the INSERT statement
-            int rowsAffected = statement.executeUpdate();
-            System.out.println("Rows affected: " + rowsAffected);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void updateOrder(int orderId) {

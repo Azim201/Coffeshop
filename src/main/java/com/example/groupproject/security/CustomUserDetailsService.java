@@ -4,6 +4,7 @@ import com.example.groupproject.entity.Role;
 import com.example.groupproject.entity.User;
 import com.example.groupproject.model.CustomUserDetails;
 import com.example.groupproject.repository.UserRepository;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,10 +15,12 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     private UserRepository userRepository;
+
 
     public CustomUserDetailsService(UserRepository userRepository){
         this.userRepository = userRepository;

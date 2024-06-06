@@ -5,10 +5,7 @@ import com.example.groupproject.model.Review;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -80,7 +77,7 @@ public class ReviewController {
         return "redirect:/reviewAllDisplay";
     }
 //DELETE REVIEW
-    @PostMapping("/reviewDelete")
+@PutMapping("/reviewDelete/{id}")
     public String updateReview(@RequestParam("id") int id) throws SQLException {
         deleteReview(id);
         System.out.println("Id to delete is " + id);

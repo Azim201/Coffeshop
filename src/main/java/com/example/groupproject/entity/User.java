@@ -20,19 +20,19 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //AUTO)
-    private Long id;
+    private int user_id;
 
     @Column(nullable = false)
-    private String name;
+    private String cust_name;
 
     @Column(nullable = false,unique = true)
-    private String email;
+    private String cust_email;
 
     @Column(nullable = false)
-    private String password;
+    private String cust_password;
 
     @Column(nullable = false)
-    private String phone_num;
+    private String cust_phonenum;
 
     @Column(nullable = false)
     private String address;
